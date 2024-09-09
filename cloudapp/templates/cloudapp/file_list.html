@@ -1,0 +1,257 @@
+{% extends 'cloudapp/base.html' %}
+{% load static %}
+
+{% block title %}My Files{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    .sidebar {
+        width: 250px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        background-color: #f8f9fa;
+        padding: 20px;
+    }
+    .content {
+        margin-left: 250px;
+        padding: 20px;
+    }
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+        }
+        .content {
+            margin-left: 0;
+        }
+    }
+    .file-icon {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+    .nav-link {
+        color: #333;
+    }
+    .nav-link:hover {
+        background-color: #e9ecef;
+    }
+    .storage-info {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 210px;
+    }
+    @media (max-width: 768px) {
+        .storage-info {
+            position: relative;
+            width: 100%;
+            margin-top: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row">
+    <div class="sidebar">
+        <h3 class="mb-4">MYBOX</h3>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-folder"></i> 모든 파일</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-star"></i> 즐겨찾기</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-share-alt"></i> 공유</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#"><i class="fas fa-trash"></i> 휴지통</a>
+            </li>
+        </ul>
+        <div class="storage-info">
+            <div class="progress mb-2">
+                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+            </div>
+            <small>7.5GB / 30GB 사용 중</small>
+        </div>
+    </div>
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                {% if current_folder %}
+                    {{ current_folder.name }}
+                {% else %}
+                    모든 파일
+                {% endif %}
+            </h2>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    업로드
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" id="upload-file">파일 업로드</a></li>
+                    <li><a class="dropdown-item" href="#" id="upload-folder">폴더 업로드</a></li>
+                </ul>
+            </div>
+            <a href="{% url 'create_folder' %}" class="btn btn-outline-secondary"><i class="fas fa-folder-plus"></i> 새 폴더</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>타입</th>
+                        <th>생성한 날짜</th>
+                        <th>작업</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for folder in folders %}
+                        <tr>
+                            <td>
+                                <i class="fas fa-folder file-icon" data-folder-id="{{ folder.id }}"></i>
+                                <a href="{% url 'folder_view' folder.id %}">{{ folder.name }}</a>
+                            </td>
+                            <td>폴더</td>
+                            <td>{{ folder.created_at }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-share"></i></a>
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteFolderModal" data-id="{{ folder.id }}"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for document in documents %}
+                        <tr>
+                            <td>
+                                <i class="fas fa-file file-icon" data-document-id="{{ document.id }}"></i>
+                                <a href="{% url 'download_file' document.id %}">{{ document.upload.name }}</a>
+                            </td>
+                            <td>파일</td>
+                            <td>{{ document.uploaded_at }}</td>
+                            <td>{{ document.upload.size|filesizeformat }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary"><i class="fas fa-share"></i></button>
+                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#moveModal" data-id="{{ document.id }}"><i class="fas fa-arrows-alt"></i></button>
+                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-id="{{ document.id }}"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not folders and not documents %}
+            <p class="text-center">업로드된 파일이 없습니다.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 파일 삭제 확인 모달 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">파일 삭제</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                정말로 이 파일을 삭제하시겠습니까?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 폴더 삭제 확인 모달 -->
+<div class="modal fade" id="deleteFolderModal" tabindex="-1" aria-labelledby="deleteFolderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteFolderModalLabel">폴더 삭제</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                정말로 이 폴더를 삭제하시겠습니까?
+            </div>
+            <div class="modal-footer">
+                <form id="deleteFolderForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 파일 이동 모달 -->
+<div class="modal fade" id="moveModal" tabindex="-1" aria-labelledby="moveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="moveModalLabel">파일 이동</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="moveForm" method="post" action="">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="folderSelect">이동할 폴더를 선택하세요:</label>
+                        <select id="folderSelect" name="folder" class="form-control">
+                            {% for folder in folders %}
+                                <option value="{{ folder.id }}">{{ folder.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">이동</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var deleteModal = document.getElementById('deleteModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var documentId = button.getAttribute('data-id');
+            var form = document.getElementById('deleteForm');
+            form.action = '{% url "delete_file" 0 %}'.replace('/0/', '/' + documentId + '/');
+        });
+
+        var deleteFolderModal = document.getElementById('deleteFolderModal');
+        deleteFolderModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var folderId = button.getAttribute('data-id');
+            var form = document.getElementById('deleteFolderForm');
+            form.action = '{% url "delete_folder" 0 %}'.replace('/0/', '/' + folderId + '/');
+        });
+
+        var moveModal = document.getElementById('moveModal');
+        moveModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var documentId = button.getAttribute('data-id');
+            var form = document.getElementById('moveForm');
+            form.action = '{% url "move_document" 0 %}'.replace('/0/', '/' + documentId + '/');
+        });
+
+        document.getElementById('upload-file').addEventListener('click', function () {
+            window.location.href = '{% url "upload_file" %}';
+        });
+
+        document.getElementById('upload-folder').addEventListener('click', function () {
+            window.location.href = '{% url "upload_folder" %}';
+        });
+    });
+</script>
+{% endblock %}

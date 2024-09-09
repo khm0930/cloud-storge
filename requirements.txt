@@ -1,0 +1,10 @@
+Django>=3.2,<4.0
+gunicorn
+mysqlclient
+djangorestframework
+Pillow
+django-allauth
+requests
+PyJWT
+cryptography
+django-prometheus

@@ -1,0 +1,55 @@
+# Python 캐시 파일
+__pycache__/
+*.py[cod]
+
+# 가상환경 디렉토리 (만약 존재할 경우)
+venv/
+env/
+.virtualenv/
+
+# Django 관련 파일
+db.sqlite3
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.cover
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.DS_Store
+test-results/
+coverage/
+
+# Media 파일 (사용자가 업로드한 파일들)
+media/uploads/
+
+# Nginx와 Docker 관련 파일 (만약 커밋할 필요 없다면)
+*.conf
+*.docker
+
+# 파일이 너무 큰 경우
+*.jpg
+*.jpeg
+*.png
+*.svg
+
+# Static 파일 캐싱 및 빌드 파일
+static/css/
+static/js/
+
+# IDE 설정 파일 (VSCode, PyCharm 등)
+.vscode/
+.idea/
+
+# Node 모듈 (만약 Node.js 프로젝트와 연동되어 있는 경우)
+node_modules/
+
+# Git LFS (파일 사이즈가 큰 경우 추가 가능)
+*.psd
+*.ai

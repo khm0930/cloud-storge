@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 cloudserver.wsgi:application
+    volumes:
+      - .:/app
+      - ./media:/app/media  # 로컬 디렉토리를 컨테이너 내 디렉토리에 마운트
+      - ./static:/app/static  # 정적 파일 디렉토리
+    ports:
+      - "8001:8000"
+    environment:
+      - DB_HOST=220.69.203.87  # 외부 MySQL 서버의 IP 주소 사용
+      - DB_NAME=cloudserver
+      - DB_USER=khm
+      - DB_PASSWORD=0930
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx.docker.conf:/etc/nginx/conf.d/default.conf
+      - ./media:/app/media  # 미디어 파일 경로 마운트
+      - ./static:/app/static  # 정적 파일 경로 마운트
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/proc'
+      - '--path.sysfs=/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($|/)"'
+
+
+networks:
+  docker_net:
+    driver: bridge
+
+
+volumes:
+  esdata:
+    driver: local
