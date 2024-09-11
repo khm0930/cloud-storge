@@ -41,8 +41,8 @@
 
 4. 다음 경로에서 애플리케이션에 접근할 수 있습니다:
 
-클라우드 스토리지 애플리케이션: http://localhost:8001
-Grafana 대시보드: http://localhost:3000
-Prometheus: http://localhost:9090
+   - 클라우드 스토리지 애플리케이션: http://localhost:8001
+   - Grafana 대시보드: http://localhost:3000
+   - Prometheus: http://localhost:9090
 
 
