@@ -22,7 +22,7 @@ from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
 from cloudapp import views  # views 모듈을 임포트
-
+from django_prometheus import exports
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,7 +32,7 @@ urlpatterns = [
     path('cloudapp/', include('cloudapp.urls')),  # cloudapp 앱의 URL 포함
     path('accounts/', include('allauth.urls')),  # allauth 인증 URL
     path('delete_file/<int:id>/', views.delete_file, name='delete_file'),
-    path('', include('django_prometheus.urls')),  # Prometheus 메트릭 URL을 변경
+    path('metrics/', exports.ExportToDjangoView, name='prometheus-django-metrics'),
 ]
 
 if settings.DEBUG:

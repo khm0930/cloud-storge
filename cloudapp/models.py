@@ -11,7 +11,7 @@ class Folder(models.Model):
 
 class Document(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    upload = models.FileField(upload_to='uploads/')
+    upload = models.FileField(upload_to='')
     uploaded_at = models.DateTimeField(auto_now_add=True)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -22,7 +22,6 @@ class Document(models.Model):
         return os.path.isfile(self.upload.path)
 
 # 파일이 존재하지 않으면 데이터베이스에서 Document 인스턴스를 삭제하는 시그널
-@receiver(models.signals.pre_save, sender=Document)
 def delete_if_file_not_exists(sender, instance, **kwargs):
     """
     Document를 저장하기 전에 파일이 존재하지 않으면 삭제하는 로직
@@ -30,9 +29,10 @@ def delete_if_file_not_exists(sender, instance, **kwargs):
     if instance.pk:  # 업데이트 시에만 체크
         try:
             old_file = Document.objects.get(pk=instance.pk).upload
-            if not os.path.isfile(old_file.path):
-                # 파일이 존재하지 않으면 데이터베이스 레코드 삭제
-                instance.delete()
+            if old_file and not os.path.isfile(old_file.path):
+                # 추가적인 조건 체크 또는 로그를 남기고, 바로 삭제하지 않음
+                print(f"파일이 존재하지 않습니다: {old_file.path}")
+                # instance.delete()  # 바로 삭제하지 않고 로그 확인 후 처리
         except Document.DoesNotExist:
             pass
 
