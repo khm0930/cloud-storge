@@ -18,7 +18,7 @@
                             </div>
                         {% endfor %}
                     {% endif %}
-                    <a href="{% provider_login_url 'google' %}" class="btn btn-outline-secondary w-100 mb-3">
+<!--                    <a href="{% provider_login_url 'google' %}" class="btn btn-outline-secondary w-100 mb-3">
                         <img src="{% static 'admin/img/kakao-icon.png' %}" alt="Kakao" width="20" class="me-2">
                         Kakao 로그인
                     </a>
@@ -29,7 +29,7 @@
                     <a href="{% provider_login_url 'apple' %}" class="btn btn-outline-secondary w-100 mb-3">
                         <img src="{% static 'admin/img/apple-icon.png' %}" alt="Apple" width="20" class="me-2">
                         Apple 로그인
-                    </a>
+                    </a> -->
                     <div class="text-center my-3">또는</div>
                     <form method="post">
                         {% csrf_token %}
