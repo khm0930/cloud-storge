@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./nginx.docker.conf /etc/nginx/nginx.conf
 
 # 데이터베이스 마이그레이션 수행 및 정적 파일 수집
-RUN python manage.py migrate
+#RUN python manage.py migrate
 RUN python manage.py collectstatic --noinput
 
 # 기본 명령어 설정 (Django 서버 실행)
