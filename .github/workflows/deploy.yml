@@ -17,7 +17,7 @@ jobs:
       run: |
         export MYSQL_USER=khm
         export MYSQL_PASSWORD=0930
-        export MYSQL_HOST=220.69.203.87
+        export MYSQL_HOST=220.69.203.87:3307
         export MYSQL_DATABASE=cloudserver
 
     - name: Set working directory  # 작업 디렉토리를 명시적으로 설정
