@@ -30,7 +30,6 @@ coverage/
 media/uploads/
 
 # Nginx와 Docker 관련 파일 (만약 커밋할 필요 없다면)
-*.conf
 *.docker
 
 # 파일이 너무 큰 경우
