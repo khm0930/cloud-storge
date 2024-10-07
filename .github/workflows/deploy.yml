@@ -19,9 +19,11 @@ jobs:
         export MYSQL_PASSWORD=0930
         export MYSQL_HOST=220.69.203.87:3307
         export MYSQL_DATABASE=cloudserver
+    - name: Install MySQL client
+      run: sudo apt-get update && sudo apt-get install -y mysql-client
+
     - name: Test MySQL connection
       run: |
-        sudo apt-get update && sudo apt-get install -y netcat
         nc -zv 220.69.203.87 3307
 
     - name: Set working directory  # 작업 디렉토리를 명시적으로 설정
