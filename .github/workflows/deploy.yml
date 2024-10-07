@@ -9,6 +9,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: '0930'  # MySQL 루트 비밀번호 설정
+          MYSQL_DATABASE: 'cloudserver'  # 사용할 데이터베이스 이름
+          MYSQL_USER: 'khm'  # 사용자
+          MYSQL_PASSWORD: '0930'  # 비밀번호
+        ports:
+          - 3306:3306
+        options: > 
+          --health-cmd="mysqladmin ping --silent" 
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+
     steps:
     - name: Check out the repository
       uses: actions/checkout@v2
