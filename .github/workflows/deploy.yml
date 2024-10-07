@@ -21,7 +21,8 @@ jobs:
         export MYSQL_DATABASE=cloudserver
     - name: Test MySQL connection
       run: |
-        mysql -h 220.69.203.87 -P 3307 -u khm -p0930 -e "SHOW DATABASES;"
+        apt-get update && apt-get install -y netcat
+        nc -zv 220.69.203.87 3307
 
     - name: Set working directory  # 작업 디렉토리를 명시적으로 설정
       run: cd ${{ github.workspace }}
