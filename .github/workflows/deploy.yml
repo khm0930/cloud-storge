@@ -19,12 +19,11 @@ jobs:
           MYSQL_PASSWORD: '0930'  # 비밀번호
         ports:
           - 3306:3306
-        options: > 
-          --health-cmd="mysqladmin ping --silent" 
+        options: >
+          --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
-
+          --health-retries=3  # 수정: 줄 바꿈 제거
 
     steps:
     - name: Check out the repository
@@ -45,7 +44,7 @@ jobs:
 
     - name: Push the Docker image to Docker Hub
       run: docker push khm0930/cloud_storage_web:${{ github.sha }}
-    
+
     - name: Set latest tag on Docker Hub
       run: docker tag khm0930/cloud_storage_web:${{ github.sha }} khm0930/cloud_storage_web:latest
 
