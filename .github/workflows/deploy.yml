@@ -9,22 +9,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: '0930'  # MySQL 루트 비밀번호 설정
-          MYSQL_DATABASE: 'cloudserver'  # 사용할 데이터베이스 이름
-          MYSQL_USER: 'khm'  # 사용자
-          MYSQL_PASSWORD: '0930'  # 비밀번호
-        ports:
-          - 3306:3306
-        options: >
-          --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=3  # 수정: 줄 바꿈 제거
-
-    steps:
+     steps:
     - name: Check out the repository
       uses: actions/checkout@v2
+
+    - name: Set up environment variables for MySQL connection
+      run: |
+        export MYSQL_USER=khm
+        export MYSQL_PASSWORD=0930
+        export MYSQL_HOST=220.69.203.87
+        export MYSQL_DATABASE=cloudserver
 
     - name: Set working directory  # 작업 디렉토리를 명시적으로 설정
       run: cd ${{ github.workspace }}
