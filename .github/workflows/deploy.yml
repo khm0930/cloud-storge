@@ -16,12 +16,15 @@ jobs:
     - name: Set working directory  # 작업 디렉토리를 명시적으로 설정
       run: cd ${{ github.workspace }}
 
+    - name: Verify nginx.docker.conf exists
+      run: ls -l ${{ github.workspace }}/nginx.docker.conf
+
 
     - name: Log in to Docker Hub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
     - name: Build the Docker image
-      run: docker build -f ./Dockerfile . -t khm0930/cloud_storage_web:${{ github.sha }}
+      run: docker build --no-cache -f ./Dockerfile . -t khm0930/cloud_storage_web:${{ github.sha }}
 
     - name: Push the Docker image to Docker Hub
       run: docker push khm0930/cloud_storage_web:${{ github.sha }}
