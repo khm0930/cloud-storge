@@ -34,3 +34,24 @@ jobs:
 
     - name: Push latest tag to Docker Hub
       run: docker push khm0930/cloud_storage_web:latest
+
+
+    - name: Check out Kubernetes deployment repo
+      uses: actions/checkout@v2
+      with:
+        repository: khm0930/cloud_storge-Kubernetes-deployment
+        token: ${{ secrets.K8S_DEPLOY_REPO_TOKEN }}
+        path: kubernetes-deployment
+
+    - name: Update Deployment YAML with new image
+      run: |
+        sed -i 's|khm0930/cloud_storage_web:.*|khm0930/cloud_storage_web:${{ github.sha }}|g' kubernetes-deployment/path/to/cloudstorge-deployment.yml
+
+    - name: Commit and Push changes to deployment repo
+      run: |
+        cd kubernetes-deployment
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
+        git add path/to/cloudstorge-deployment.yml
+        git commit -m "Update deployment image to ${{ github.sha }}"
+        git push https://x-access-token:${{ secrets.K8S_DEPLOY_REPO_TOKEN }}@github.com/khm0930/cloud_storge-Kubernetes-deployment.git
