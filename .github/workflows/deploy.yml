@@ -45,8 +45,7 @@ jobs:
 
     - name: Update Deployment YAML with new image
       run: |
-        sed -i 's|khm0930/cloud_storage_web:.*|khm0930/cloud_storage_web:${{ github.sha }}|g' kubernetes-deployment/path/to/cloudstorge-deployment.yml
-
+        sed -i 's|khm0930/cloud_storage_web:.*|khm0930/cloud_storage_web:${{ github.sha }}|g' kubernetes-deployment/cloudstorge-deployment.yml
     - name: Commit and Push changes to deployment repo
       run: |
         cd kubernetes-deployment
