@@ -1,6 +1,6 @@
 {% extends 'cloudapp/base.html' %}
 {% load static %}
-
+{% load tz %}
 {% block title %}My Files{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -76,7 +76,7 @@
             <div class="progress mb-2">
                 <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
             </div>
-            <small>7.5GB / 30GB 사용 중</small>
+            <small>0GB / 30GB 사용 중</small>
         </div>
     </div>
     <div class="content">
@@ -117,7 +117,7 @@
                                 <a href="{% url 'folder_view' folder.id %}">{{ folder.name }}</a>
                             </td>
                             <td>폴더</td>
-                            <td>{{ folder.created_at }}</td>
+                            <td>{{ folder.created_at|localtime|date:"Y년 n월 j일 A g:i" }}</td>
                             <td>
                                 <a href="#" class="btn btn-sm btn-outline-primary"><i class="fas fa-share"></i></a>
                                 <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteFolderModal" data-id="{{ folder.id }}"><i class="fas fa-trash"></i></button>
@@ -131,7 +131,7 @@
                                 <a href="{% url 'download_file' document.id %}">{{ document.upload.name }}</a>
                             </td>
                             <td>파일</td>
-                            <td>{{ document.uploaded_at }}</td>
+                            <td>{{ document.uploaded_at|localtime|date:"Y년 n월 j일 A g:i" }}</td>
                             <td>{{ document.upload.size|filesizeformat }}</td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary"><i class="fas fa-share"></i></button>
