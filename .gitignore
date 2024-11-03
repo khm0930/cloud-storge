@@ -52,3 +52,4 @@ node_modules/
 # Git LFS (파일 사이즈가 큰 경우 추가 가능)
 *.psd
 *.ai
+
