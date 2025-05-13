@@ -26,7 +26,7 @@
 - **백엔드**
   - Django (Python 웹 프레임워크)
   - Django REST Framework
-  - PostgreSQL (데이터베이스)
+  - MySQL (데이터베이스)
 
 - **프론트엔드**
   - HTML5/CSS3
