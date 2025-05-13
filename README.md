@@ -1,48 +1,102 @@
-# 클라우드 스토리지 애플리케이션
+# Cloud Storage 웹 애플리케이션
 
-이 저장소는 클라우드 스토리지 애플리케이션의 소스 코드를 포함하고 있습니다. 이 프로젝트는 Django로 구현된 백엔드 서비스, Docker를 사용한 컨테이너화된 배포, 그리고 Prometheus 및 Grafana를 통한 모니터링 서비스를 포함하고 있습니다.
+## 프로젝트 소개
+이 프로젝트는 사용자 친화적인 클라우드 스토리지 웹 애플리케이션입니다. 사용자들이 파일을 안전하게 저장하고 관리할 수 있는 개인 클라우드 스토리지 서비스를 제공합니다.
+
+## 주요 기능
+- **파일 관리**
+  - 파일 업로드/다운로드
+  - 폴더 생성 및 관리
+  - 드래그 앤 드롭 파일 업로드
+  - 파일 이동 및 삭제
+  - 폴더 구조 지원
+
+- **사용자 관리**
+  - 이메일 기반 회원가입/로그인
+  - 소셜 로그인 (Google, Apple)
+  - 비밀번호 재설정
+  - 사용자별 파일 관리
+
+- **보안**
+  - 사용자 인증 및 권한 관리
+  - 파일 접근 제어
+  - 안전한 파일 저장 및 관리
+
+## 기술 스택
+- **백엔드**
+  - Django (Python 웹 프레임워크)
+  - Django REST Framework
+  - PostgreSQL (데이터베이스)
+
+- **프론트엔드**
+  - HTML5/CSS3
+  - JavaScript
+  - Bootstrap 5
+  - Font Awesome
+
+- **인프라**
+  - Docker
+  - Nginx
+  - Gunicorn
+  - Prometheus (모니터링)
+  - Logstash (로그 관리)
 
 ## 프로젝트 구조
+```
+cloud-storage/
+├── cloudapp/              # 메인 애플리케이션
+│   ├── templates/        # HTML 템플릿
+│   ├── static/          # 정적 파일
+│   └── models.py        # 데이터베이스 모델
+├── cloudserver/         # 서버 설정
+├── static/             # 전역 정적 파일
+├── Dockerfile          # Docker 이미지 설정
+├── docker-compose.yml  # Docker 컨테이너 구성
+└── requirements.txt    # Python 패키지 의존성
+```
 
-- `cloudapp/`: 클라우드 스토리지 관련 기능을 처리하는 Django 애플리케이션을 포함하고 있습니다.
-- `cloudserver/`: 클라우드 스토리지 애플리케이션을 실행하는 서버 측 로직 및 설정 파일이 포함되어 있습니다.
-- `static/admin/`: Django 관리자 인터페이스를 위한 정적 파일들이 포함되어 있습니다.
-- `.env`: 프로젝트 환경 설정을 위한 환경 변수 파일(저장소에 포함되지 않음).
-- `.gitattributes`: Git 파일 속성 관리 설정 파일.
-- `.gitignore`: Git에서 버전 관리하지 않을 파일 및 디렉토리를 지정하는 파일.
-- `Dockerfile`: 클라우드 스토리지 애플리케이션의 Docker 이미지를 빌드하기 위한 설정 파일.
-- `alertmanager.yml`: Prometheus Alertmanager 설정 파일로, 사전에 정의된 규칙에 따라 알림을 보냅니다.
-- `docker-compose.yml`: 여러 컨테이너(Django, Nginx, Prometheus, Grafana 등)를 관리하는 Docker Compose 설정 파일.
-- `manage.py`: Django의 관리 작업을 위한 명령어 도구.
-- `prometheus.yml`: Prometheus 설정 파일로, 모니터링 시스템을 구성하는 데 사용됩니다.
-- `requirements.txt`: Django 애플리케이션에 필요한 Python 패키지 종속성 목록을 포함합니다.
-- `runserver.sh`: Django 개발 서버를 실행하기 위한 셸 스크립트.
+## 설치 및 실행
+1. 저장소 클론
+```bash
+git clone [repository-url]
+cd cloud-storage
+```
 
-## 프로젝트 실행 방법
+2. 환경 설정
+```bash
+cp .env.example .env
+# .env 파일에 필요한 환경 변수 설정
+```
 
-### 사전 준비 사항
+3. Docker로 실행
+```bash
+docker-compose up -d
+```
 
-- Docker 및 Docker Compose가 설치되어 있어야 합니다.
-- Python 3.8 이상의 버전이 필요합니다.
+4. 로컬 개발 환경 설정
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
-### 실행 절차
+## 개발 환경 설정
+- Python 3.8 이상
+- Docker 및 Docker Compose
+- Node.js 및 npm (프론트엔드 개발용)
 
-1. 저장소를 클론합니다:
-   ```bash
-   git clone https://github.com/khm0930/cloud-storge.git
+## 기여 방법
+1. 이슈 생성 또는 기존 이슈 확인
+2. 새로운 브랜치 생성
+3. 변경사항 커밋
+4. Pull Request 생성
 
-2. 프로젝트 디렉토리로 이동합니다:
-   ```bash
-   cd cloudserver_copy
+## 라이선스
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
 
-3. Docker Compose를 사용해 컨테이너를 빌드하고 실행합니다:
-    ```bash
-   docker-compose up --build
-
-4. 다음 경로에서 애플리케이션에 접근할 수 있습니다:
-
-   - 클라우드 스토리지 애플리케이션: http://localhost:8001
-   - Grafana 대시보드: http://localhost:3000
-   - Prometheus: http://localhost:9090
+## 연락처
+프로젝트에 대한 문의사항이 있으시면 이슈를 생성해 주시기 바랍니다.
 
 
