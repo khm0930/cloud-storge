@@ -1,0 +1,21 @@
+SELECT 
+    A.svc_req_id,
+    A.sto_pjt_num,
+    A.total,
+    A.accnt_id,
+    C.aname
+FROM 
+    TOSS_SUB_AR A
+JOIN 
+    TOSS_SVC_REQ B
+      ON A.svc_req_id = B.svc_req_id
+LEFT JOIN 
+    TB_ACCT C
+      ON (
+          CASE 
+              WHEN INSTR(A.accnt_id, ',') > 0 THEN 
+                  SUBSTR(A.accnt_id, 1, INSTR(A.accnt_id, ',') - 1)
+              ELSE 
+                  A.accnt_id
+          END
+      ) = C.aname;
