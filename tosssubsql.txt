@@ -13,9 +13,9 @@ LEFT JOIN
     TB_ACCT C
       ON (
           CASE 
-              WHEN INSTR(A.accnt_id, ',') > 0 THEN 
-                  SUBSTR(A.accnt_id, 1, INSTR(A.accnt_id, ',') - 1)
+              WHEN INSTR(DBMS_LOB.SUBSTR(A.accnt_id,4000,1), ',') > 0 THEN 
+                  SUBSTR(DBMS_LOB.SUBSTR(A.accnt_id,4000,1), 1, INSTR(DBMS_LOB.SUBSTR(A.accnt_id,4000,1), ',') - 1)
               ELSE 
-                  A.accnt_id
+                  DBMS_LOB.SUBSTR(A.accnt_id,4000,1)
           END
       ) = C.aname;
