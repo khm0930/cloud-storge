@@ -1,80 +1,32 @@
-import subprocess
-import sys
+#!/bin/bin/csh -f
 
-def get_storage_mapping(target_accounts):
-    """
-    .csh 스크립트를 실행하여 계정별 스토리지 정보를 동적으로 가져옵니다.
-    출력 형식 가정: dshk 1234 1234 server volume ...
-    """
-    storage_map = {}
-    script_path = "/user/dshk/nsh_storage_volume.csh"
-    
-    try:
-        # 1. 파일을 읽는 것이 아니라 '실행'하여 표준 출력을 가로챕니다.
-        # csh로 실행하며, 인코딩 에러는 무시합니다.
-        result = subprocess.run(['csh', script_path], capture_output=True, text=True, errors='ignore')
-        
-        for line in result.stdout.splitlines():
-            parts = line.strip().split()
-            if len(parts) >= 4:
-                # [0]: 계정명, [3]: 스토리지 서버명
-                acc_name = parts[0]
-                if acc_name in target_accounts:
-                    storage_map[acc_name] = parts[3]
-        return storage_map
-    except Exception as e:
-        print(f"[오류] 스토리지 정보 스크립트 실행 실패: {e}")
-        sys.exit(1)
+# 1. 인자가 없으면 사용법 출력
+if ($#argv == 0) then
+    echo "Usage: inode <account1> <account2> ..."
+    exit 1
+endif
 
-def run_quota_command(account, storage):
-    """
-    스토리지 이름에 따라 Dell(Isilon) 또는 NetApp 명령어를 실행합니다.
-    """
-    storage_lower = storage.lower()
-    
-    # 1. NetApp 판별 (이름에 'filer'가 포함된 경우)
-    if "filer" in storage_lower:
-        # 규칙: filer -> node 변환 후 -mgt-00 접미사 추가
-        netapp_host = storage_lower.replace("filer", "node") + "-mgt-00"
-        cmd = f"sudo ssh -l admin {netapp_host} quota report | grep {account}"
-        vendor = "NetApp"
-    
-    # 2. Dell (Isilon) 판별 (그 외 일반적인 경우)
-    else:
-        cmd = f"sudo ssh {storage} isi quota list -v | grep {account}"
-        vendor = "Dell"
+# 2. 입력받은 모든 계정에 대해 반복 실행
+foreach acc ($argv)
+    # nsh_storage_volume.csh를 실행한 결과에서 해당 계정 줄을 찾고 4번째 단어(스토리지) 추출
+    set storage = `source /user/dshk/nsh_storage_volume.csh | grep "^$acc " | awk '{print $4}'`
 
-    print(f"=== [{vendor}] Target: {account} | Storage: {storage} ===")
-    
-    try:
-        # 실시간 조회를 위해 shell=True 사용
-        proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        if proc.stdout:
-            print(proc.stdout.strip())
-        else:
-            print(f"데이터가 없습니다. (실행 명령어: {cmd})")
-    except Exception as e:
-        print(f"명령어 실행 중 에러: {e}")
-    print("-" * 60)
+    if ("$storage" == "") then
+        echo "--- [Error] $acc : 스토리지 정보를 찾을 수 없습니다. ---"
+        continue
+    endif
 
-def main():
-    # 실행 시 인자가 없으면 사용법 출력
-    if len(sys.argv) < 2:
-        print("Usage: python3 inode.py <account1> <account2> ...")
-        sys.exit(1)
+    echo "--- Checking Quota for $acc on $storage ---"
 
-    target_accounts = sys.argv[1:]
-    
-    # 1단계: 스토리지 맵핑 정보 로드
-    storage_info = get_storage_mapping(target_accounts)
+    # 3. 스토리지 이름에 'filer'가 들어있는지에 따라 명령어 분기
+    if ("$storage" =~ *filer*) then
+        # NetApp: filer -> node 변경 및 -mgt-00 추가
+        set netapp_host = `echo $storage | sed 's/filer/node/'`"-mgt-00"
+        sudo ssh -l admin $netapp_host "quota report | grep $acc"
+    else
+        # Dell (Isilon)
+        sudo ssh $storage "isi quota list -v | grep $acc"
+    endif
 
-    # 2단계: 각 계정별로 쿼터 명령어 실행
-    for account in target_accounts:
-        if account in storage_info:
-            run_quota_command(account, storage_info[account])
-        else:
-            print(f"[경고] '{account}' 계정의 스토리지 정보를 찾을 수 없습니다.")
-            print("-" * 60)
-
-if __name__ == "__main__":
-    main()
+    echo ""
+end
