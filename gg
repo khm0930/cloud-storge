@@ -1,31 +1,40 @@
-#!/bin/bin/csh -f
+#!/bin/csh -f
 
-# 1. 인자가 없으면 사용법 출력
+# 1. 인자가 없으면 종료
 if ($#argv == 0) then
     echo "Usage: inode <account1> <account2> ..."
     exit 1
 endif
 
-# 2. 입력받은 모든 계정에 대해 반복 실행
 foreach acc ($argv)
-    # nsh_storage_volume.csh를 실행한 결과에서 해당 계정 줄을 찾고 4번째 단어(스토리지) 추출
+    # 스크립트 실행 결과에서 계정의 4번째 필드(스토리지) 추출
     set storage = `source /user/dshk/nsh_storage_volume.csh | grep "^$acc " | awk '{print $4}'`
 
     if ("$storage" == "") then
-        echo "--- [Error] $acc : 스토리지 정보를 찾을 수 없습니다. ---"
+        echo "[Error] $acc : No storage info found."
         continue
     endif
 
-    echo "--- Checking Quota for $acc on $storage ---"
+    # 스토리지 첫 글자 추출 (d=Dell, n=NetApp)
+    set first_char = `echo $storage | cut -c1`
 
-    # 3. 스토리지 이름에 'filer'가 들어있는지에 따라 명령어 분기
-    if ("$storage" =~ *filer*) then
-        # NetApp: filer -> node 변경 및 -mgt-00 추가
-        set netapp_host = `echo $storage | sed 's/filer/node/'`"-mgt-00"
-        sudo ssh -l admin $netapp_host "quota report | grep $acc"
+    echo "--- Checking Quota: $acc ($storage) ---"
+
+    if ("$first_char" == "n") then
+        # [NetApp 케이스]
+        # filer -> node 변경 및 -mgt-00 추가
+        set net_host = `echo $storage | sed 's/filer/node/'`"-mgt-00"
+        
+        # 중요: NetApp은 SSH 내부에서 grep이 안 될 수 있으므로 
+        # 전체를 가져와서 로컬(현재 서버)에서 grep 처리합니다.
+        sudo ssh -l admin $net_host "quota report" | grep "$acc"
+
+    else if ("$first_char" == "d") then
+        # [Dell 케이스]
+        sudo ssh $storage "isi quota list -v" | grep "$acc"
+
     else
-        # Dell (Isilon)
-        sudo ssh $storage "isi quota list -v | grep $acc"
+        echo "Unknown storage type for: $storage"
     endif
 
     echo ""
