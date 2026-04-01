@@ -1,41 +1,44 @@
 #!/bin/csh -f
 
-# 1. 인자가 없으면 종료
+# 1. 인자 체크 (인자가 없으면 종료)
 if ($#argv == 0) then
-    echo "Usage: inode <account1> <account2> ..."
+    echo "Usage: inode <account_or_storage>"
     exit 1
 endif
 
-foreach acc ($argv)
-    # 스크립트 실행 결과에서 계정의 4번째 필드(스토리지) 추출
-    set storage = `source /user/dshk/nsh_storage_volume.csh | grep "^$acc " | awk '{print $4}'`
+set input = $1
 
-    if ("$storage" == "") then
-        echo "[Error] $acc : No storage info found."
-        continue
-    endif
+# 2. 입력값이 '계정명'인지 '스토리지명'인지 판단
+# nsh_storage_volume.csh 결과의 1열에서 찾으면 계정, 4열에서 찾으면 스토리지
+set is_account = `source /user/dshk/nsh_storage_volume.csh | awk '{print $1}' | grep -w "$input"`
+set is_storage = `source /user/dshk/nsh_storage_volume.csh | awk '{print $4}' | grep -w "$input" | head -1`
 
-    # 스토리지 첫 글자 추출 (d=Dell, n=NetApp)
+# --- [CASE 1] 계정명을 입력했을 때 ---
+if ("$is_account" != "") then
+    set storage = `source /user/dshk/nsh_storage_volume.csh | grep -w "^$input" | awk '{print $4}'`
     set first_char = `echo $storage | cut -c1`
 
-    echo "--- Checking Quota: $acc ($storage) ---"
-
+    echo "--- Checking Account Quota: $input ($storage) ---"
     if ("$first_char" == "n") then
-        # [NetApp 케이스]
-        # filer -> node 변경 및 -mgt-00 추가
         set net_host = `echo $storage | sed 's/filer/node/'`"-mgt-00"
-        
-        # 중요: NetApp은 SSH 내부에서 grep이 안 될 수 있으므로 
-        # 전체를 가져와서 로컬(현재 서버)에서 grep 처리합니다.
-        sudo ssh -l admin $net_host "quota report" | grep "$acc"
-
-    else if ("$first_char" == "d") then
-        # [Dell 케이스]
-        sudo ssh $storage "isi quota list -v" | grep "$acc"
-
+        sudo ssh -l admin $net_host "quota report" | grep -w "$input"
     else
-        echo "Unknown storage type for: $storage"
+        sudo ssh $storage "isi quota list -v" | grep -w "$input"
     endif
 
-    echo ""
-end
+# --- [CASE 2] 스토리지명을 입력했을 때 (전체 출력) ---
+else if ("$is_storage" != "") then
+    set storage = $is_storage
+    set first_char = `echo $storage | cut -c1`
+
+    echo "--- Checking Full Storage Quota: $storage ---"
+    if ("$first_char" == "n") then
+        set net_host = `echo $storage | sed 's/filer/node/'`"-mgt-00"
+        sudo ssh -l admin $net_host "quota report"
+    else
+        sudo ssh $storage "isi quota list -v"
+    endif
+
+else
+    echo "[Error] '$input' is neither a valid account nor a recognized storage."
+endif
